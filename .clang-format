@@ -1,0 +1,14 @@
+Standard: c++20
+BasedOnStyle: LLVM
+IndentWidth: 2
+BreakBeforeBraces: Linux
+ColumnLimit: 120
+SeparateDefinitionBlocks: Always
+AlignConsecutiveAssignments: AcrossComments
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveDeclarations: AcrossComments
+AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AllowShortCaseLabelsOnASingleLine: false
+IncludeBlocks: Regroup
+AlignTrailingComments: true
+AllowShortIfStatementsOnASingleLine: true
