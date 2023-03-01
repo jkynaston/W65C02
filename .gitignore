@@ -1,3 +1,5 @@
 .vscode
 builddir
 m6502.*
+*.obsidian*
+.cache

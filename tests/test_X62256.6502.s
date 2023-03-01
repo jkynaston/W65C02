@@ -1,0 +1,4 @@
+  .word 0x0123
+  .word 0x4567
+  .word 0x89AB
+  .word 0xCDEF
