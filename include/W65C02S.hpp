@@ -134,22 +134,65 @@ private: // internal ops
   void _ADC();
 
   // instruction set
+  /*
+    TODO: New addressing modes
+          [absolute indexed indirect] and [zero page indirect] exist for:
+          ORA, AND, EOR, ADC, STA, LDA, CMP, SBC
+   */
   void ADC();
   void AND();
-  void ASL();
-  void BCC();
-  void BCS();
-  void BEQ();
-  void BIT();
-  void BMI();
-  void BNE();
-  void BPL();
+  void ASL(); // TODO implement ASL
+  void BCC(); // TODO implement BCC
+  void BCS(); // TODO implement BCS
+  void BEQ(); // TODO implement BEQ
+  void BIT(); // TODO implement BIT
+  void BMI(); // TODO implement BMI
+  void BNE(); // TODO implement BNE
+  void BPL(); // TODO implement BPL
   void BRK();
-  void BVC();
-  void BVS();
+  void BVC(); // TODO implement BVC
+  void BVS(); // TODO implement BVS
   void CLC();
+  void CLD(); // TODO implement CLD
+  void CLI(); // TODO implement CLI
+  void CLV(); // TODO implement CLV
+  void CMP(); // TODO implement CMP
+  void CPX(); // TODO implement CPX
+  void CPY(); // TODO implement CPY
+  void DEC(); // TODO implement DEC
+  void DEX(); // TODO implement DEX
+  void DEY(); // TODO implement DEY
+  void EOR(); // TODO implement EOR
+  void INC(); // TODO implement INC
+  void INX(); // TODO implement INX
+  void INY(); // TODO implement INY
+  void JMP(); // TODO implement JMP
+  void JSR(); // TODO implement JSR
   void LDA();
   void LDX();
+  void LDY();
+  void LSR(); // TODO implement LSR
+  void NOP(); // TODO implement NOP
+  void ORA(); // TODO implement ORA
+  void PHA(); // TODO implement PHA
+  void PHP(); // TODO implement PHP
+  void PLA(); // TODO implement PLA
+  void PLP(); // TODO implement PLP
+  void ROL(); // TODO implement ROL
+  void ROR(); // TODO implement ROR
+  void RTI(); // TODO implement RTI
+  void RTS(); // TODO implement RTS
+  void SBC(); // TODO implement SBC
+  void SEC(); // TODO implement SEC
+  void STA(); // TODO implement STA
+  void STX(); // TODO implement STX
+  void STY(); // TODO implement STY
+  void TAX(); // TODO implement TAX
+  void TAY(); // TODO implement TAY
+  void TSX(); // TODO implement TSX
+  void TXA(); // TODO implement TXA
+  void TXS(); // TODO implement TXS
+  void TYA(); // TODO implement TYA
 };
 
 #endif // W65C02S_HPP

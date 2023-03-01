@@ -23,7 +23,7 @@ void W65C02S::_ADC()
   else
     UNSET_Z();
 
-  if (~((uint16_t)A ^ (uint16_t)data) & ((uint16_t)A ^ (uint16_t)result) & 0x0080)
+  if (((uint16_t)A ^ (uint16_t)data) & ((uint16_t)A ^ (uint16_t)result) & 0x80)
     SET_V();
   else
     UNSET_V();
@@ -39,7 +39,7 @@ void W65C02S::_ADC()
 void W65C02S::ADC()
 {
   switch (IR) {
-  /* ---------------------------------------------- ADC (indirect,X) ------------------------------------------------ */
+  // ADC (indirect,X)
   case (0x61 << 4) | 0:
     set_addr(PC++);
     break;
@@ -64,7 +64,7 @@ void W65C02S::ADC()
     _ADC(); // adc on result
     _FETCH();
     break;
-  /* --------------------------------------------------- ADC zp ----------------------------------------------------- */
+  // ADC zp
   case (0x65 << 4) | 0:
     addr_pins = PC++;
     break;
@@ -75,7 +75,7 @@ void W65C02S::ADC()
     _ADC();
     _FETCH();
     break;
-  /* --------------------------------------------------- ADC imm ---------------------------------------------------- */
+  // ADC imm
   case (0x69 << 4) | 0:
     addr_pins = PC++;
     break;
@@ -83,7 +83,7 @@ void W65C02S::ADC()
     _ADC();
     _FETCH();
     break;
-  /* --------------------------------------------------- ADC abs ---------------------------------------------------- */
+  // ADC abs
   case (0x6D << 4) | 0:
     addr_pins = PC++;
     break;
@@ -198,48 +198,173 @@ void W65C02S::ADC()
 
 void W65C02S::AND()
 {
-  // TODO Implement AND
+  switch (IR) {
+  /* ---------------------------------------------- AND (indirect,X) ------------------------------------------------ */
+  case (0x21 << 4) | 0:
+    set_addr(PC++);
+    break;
+  case (0x21 << 4) | 1:
+    AR = data_pins; // read operand
+    set_addr(AR);   // output operand as address on bus
+    break;
+  case (0x21 << 4) | 2:
+    AR += X;      // increment operand address by X
+    AR &= 0xFF;   // implement wraparound
+    set_addr(AR); // request LO byte of ptr
+    break;
+  case (0x21 << 4) | 3:
+    addr_pins += 1;    // request HI byte of ptr
+    addr_pins &= 0xFF; // wraparound
+    AR = data_pins;    // write LO byte of ptr
+    break;
+  case (0x21 << 4) | 4:
+    addr_pins = AR | (data_pins << 8); // read HI byte of ptr
+    break;
+  case (0x21 << 4) | 5:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- AND zp ----------------------------------------------------- */
+  case (0x25 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x25 << 4) | 1:
+    addr_pins = AR = get_data();
+    break;
+  case (0x25 << 4) | 2:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- AND imm ---------------------------------------------------- */
+  case (0x29 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x29 << 4) | 1:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- AND abs ---------------------------------------------------- */
+  case (0x2D << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x2D << 4) | 1:
+    AR        = data_pins;
+    addr_pins = PC++;
+    break;
+  case (0x2D << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = AR;
+    break;
+  case (0x2D << 4) | 3:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* ---------------------------------------------- AND (indirect),Y ------------------------------------------------ */
+  case (0x31 << 4) | 0: // request operand
+    set_addr(PC++);
+    break;
+  case (0x31 << 4) | 1:
+    AR = get_data(); // read operand
+    set_addr(AR);    // request (operand)
+    break;
+  case (0x31 << 4) | 2:
+    set_addr((AR + 1) & 0xFF); // request (operand)_HI
+    AR = get_data();           // read (operand)_LO
+    break;
+  case (0x31 << 4) | 3:
+    AR |= get_data() << 8;                          // read ptr HI
+    set_addr((AR & 0xFF00) | ((AR + Y) & 0x00FF));  // request ((operand)+Y) with pagewrap
+    if ((AR & 0xFF00) == ((AR + Y) & 0xFF00)) IR++; // no pagewrap fix needed if no page crossed
+    break;
+  case (0x31 << 4) | 4:
+    set_addr(AR + Y); // request ((operand)+Y) with pagewrap fixed
+    break;
+  case (0x31 << 4) | 5:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- AND zp,X ---------------------------------------------------- */
+  case (0x35 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x35 << 4) | 1:
+    AR = data_pins;
+    break;
+  case (0x35 << 4) | 2:
+    addr_pins = AR += X;
+    break;
+  case (0x35 << 4) | 3:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- AND abs,Y ----------------------------------------------------*/
+  case (0x39 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x39 << 4) | 1:
+    addr_pins = PC++;
+    AR        = data_pins;
+    break;
+  case (0x39 << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = (AR & 0xFF00) | ((AR + Y) & 0x00FF);
+    if (((AR + Y) & 0xFF00) == (AR & 0xFF00)) IR++;
+    break;
+  case (0x39 << 4) | 3:
+    addr_pins = (AR += Y);
+    break;
+  case (0x39 << 4) | 4:
+    A &= get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- AND abs,X --------------------------------------------------- */
+  case (0x3D << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0x3D << 4) | 1:
+    addr_pins = PC++;
+    AR        = data_pins;
+    break;
+  case (0x3D << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = (AR & 0xFF00) | ((AR + X) & 0x00FF);
+    if (((AR + X) & 0xFF00) == (AR & 0xFF00)) IR++;
+    break;
+  case (0x3D << 4) | 3:
+    addr_pins = (AR += X);
+    break;
+  case (0x3D << 4) | 4:
+    A &= get_data();
+    _FETCH();
+    break;
+  }
+
+  if ((A & 0x80) != 0)
+    SET_N();
+  else
+    UNSET_N();
+
+  if (A == 0x00)
+    SET_Z();
+  else
+    UNSET_Z();
 }
 
-void W65C02S::ASL()
-{
-  // TODO implement ASL
-}
+void W65C02S::ASL() {}
 
-void W65C02S::BCC()
-{
-  // TODO implement BCC
-}
+void W65C02S::BCC() {}
 
-void W65C02S::BCS()
-{
-  // TODO implement BCS
-}
+void W65C02S::BCS() {}
 
-void W65C02S::BEQ()
-{
-  // TODO implement BEQ
-}
+void W65C02S::BEQ() {}
 
-void W65C02S::BIT()
-{
-  // TODO implement BIT
-}
+void W65C02S::BIT() {}
 
-void W65C02S::BMI()
-{
-  // TODO implement BMI
-}
+void W65C02S::BMI() {}
 
-void W65C02S::BNE()
-{
-  // TODO implement BNE
-}
+void W65C02S::BNE() {}
 
-void W65C02S::BPL()
-{
-  // TODO implement BPL
-}
+void W65C02S::BPL() {}
 
 void W65C02S::BRK()
 {
@@ -288,15 +413,9 @@ void W65C02S::BRK()
   }
 }
 
-void W65C02S::BVC()
-{
-  // TODO implement BVC
-}
+void W65C02S::BVC() {}
 
-void W65C02S::BVS()
-{
-  // TODO implement BVS
-}
+void W65C02S::BVS() {}
 
 void W65C02S::CLC()
 {
@@ -454,7 +573,175 @@ void W65C02S::LDA()
   }
 }
 
-void W65C02S::LDX() {}
+void W65C02S::LDX()
+{
+  switch (IR) {
+  /* --------------------------------------------------- LDX zp ----------------------------------------------------- */
+  case (0xA6 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xA6 << 4) | 1:
+    addr_pins = AR = get_data();
+    break;
+  case (0xA6 << 4) | 2:
+    X = get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- LDX imm ---------------------------------------------------- */
+  case (0xA2 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xA2 << 4) | 1:
+    X = get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- LDX abs ---------------------------------------------------- */
+  case (0xAE << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xAE << 4) | 1:
+    AR        = data_pins;
+    addr_pins = PC++;
+    break;
+  case (0xAE << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = AR;
+    break;
+  case (0xAE << 4) | 3:
+    X = get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- LDX zp,X ---------------------------------------------------- */
+  case (0xB6 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xB6 << 4) | 1:
+    AR = data_pins;
+    break;
+  case (0xB6 << 4) | 2:
+    addr_pins = AR += X;
+    break;
+  case (0xB6 << 4) | 3:
+    X = get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- LDX abs,Y ----------------------------------------------------*/
+  case (0xBE << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xBE << 4) | 1:
+    addr_pins = PC++;
+    AR        = data_pins;
+    break;
+  case (0xBE << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = (AR & 0xFF00) | ((AR + Y) & 0x00FF);
+    if (((AR + Y) & 0xFF00) == (AR & 0xFF00)) IR++;
+    break;
+  case (0xBE << 4) | 3:
+    addr_pins = (AR += Y);
+    break;
+  case (0xBE << 4) | 4:
+    X = get_data();
+    _FETCH();
+    break;
+  }
+
+  if ((A & 0x80) != 0)
+    SET_N();
+  else
+    UNSET_N();
+
+  if (A == 0)
+    SET_Z();
+  else
+    UNSET_Z();
+}
+
+void W65C02S::LDY()
+{
+  switch (IR) {
+  /* --------------------------------------------------- LDY zp ----------------------------------------------------- */
+  case (0xA4 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xA4 << 4) | 1:
+    addr_pins = AR = get_data();
+    break;
+  case (0xA4 << 4) | 2:
+    Y = get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- LDY imm ---------------------------------------------------- */
+  case (0xA0 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xA0 << 4) | 1:
+    Y = get_data();
+    _FETCH();
+    break;
+  /* --------------------------------------------------- LDY abs ---------------------------------------------------- */
+  case (0xAC << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xAC << 4) | 1:
+    AR        = data_pins;
+    addr_pins = PC++;
+    break;
+  case (0xAC << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = AR;
+    break;
+  case (0xAC << 4) | 3:
+    Y = get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- LDY zp,X ---------------------------------------------------- */
+  case (0xB4 << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xB4 << 4) | 1:
+    AR = data_pins;
+    break;
+  case (0xB4 << 4) | 2:
+    addr_pins = AR += X;
+    break;
+  case (0xB4 << 4) | 3:
+    Y = get_data();
+    _FETCH();
+    break;
+  /* -------------------------------------------------- LDY abs,X ----------------------------------------------------*/
+  case (0xBC << 4) | 0:
+    addr_pins = PC++;
+    break;
+  case (0xBC << 4) | 1:
+    addr_pins = PC++;
+    AR        = data_pins;
+    break;
+  case (0xBC << 4) | 2:
+    AR |= data_pins << 8;
+    addr_pins = (AR & 0xFF00) | ((AR + X) & 0x00FF);
+    if (((AR + X) & 0xFF00) == (AR & 0xFF00)) IR++;
+    break;
+  case (0xBC << 4) | 3:
+    addr_pins = (AR += X);
+    break;
+  case (0xBC << 4) | 4:
+    Y = get_data();
+    _FETCH();
+    break;
+  }
+
+  if ((A & 0x80) != 0)
+    SET_N();
+  else
+    UNSET_N();
+
+  if (A == 0)
+    SET_Z();
+  else
+    UNSET_Z();
+}
 
 void W65C02S::tick()
 {
@@ -472,13 +759,16 @@ void W65C02S::tick()
 
   set_read();
 
-  uint8_t OP = IR >> 4;
+  uint8_t OP  = IR >> 4;
+  uint8_t aaa = (OP & 0b11100000) >> 5;
+  uint8_t bbb = (OP & 0b00011100) >> 2;
+  uint8_t cc  = OP & 0b00000011;
 
-  if (OP == 0x61 || OP == 0x65 || OP == 0x69 || OP == 0x6D || OP == 0x71 || OP == 0x75 || OP == 0x79 || OP == 0x7D)
-    ADC();
-  else if (OP == 0x25 || OP == 0x29 || OP == 0x35 || OP == 0x2D || OP == 0x3D || OP == 0x39 || OP == 0x21 || OP == 0x31)
-    AND();
-  else if (OP == 0x00)
+  if ((cc == 0b01) && (OP != 0x89)) {
+    if (aaa == 0b000) ORA();
+    if (aaa == 0b001) AND();
+    if (aaa == 0b011) ADC();
+  } else if (OP == 0x00)
     BRK();
   else if (OP == 0x18)
     CLC();

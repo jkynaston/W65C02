@@ -4,7 +4,7 @@ comp_6502 = find_program('vasm6502_oldstyle')
 adc_bin = custom_target(
   output : 'test_adc.bin',
   input : 'test_adc.6502.s',
-  command : [comp_6502, '-Fbin', '-dotdir', '@INPUT@', '-o', '@OUTPUT@'],
+  command : [comp_6502, '-Fbin', '-dotdir', '-wdc02', '@INPUT@', '-o', '@OUTPUT@'],
   build_by_default : true
 )
 

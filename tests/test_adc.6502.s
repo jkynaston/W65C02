@@ -13,6 +13,7 @@ VAL: .word 0x0503
   ADC VAL,Y
   ADC (VAL,X)
   ADC (VAL),Y
+  STP
 
   .org 0x0503
   .byte 0x06
