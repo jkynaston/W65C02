@@ -135,11 +135,21 @@ private: // internal ops
 
   // instruction set
   void ADC();
+  void AND();
+  void ASL();
+  void BCC();
+  void BCS();
+  void BEQ();
+  void BIT();
+  void BMI();
+  void BNE();
+  void BPL();
   void BRK();
-  void CLX();
+  void BVC();
+  void BVS();
+  void CLC();
   void LDA();
   void LDX();
-  void AND();
 };
 
 #endif // W65C02S_HPP

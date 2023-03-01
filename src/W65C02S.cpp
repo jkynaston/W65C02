@@ -201,6 +201,46 @@ void W65C02S::AND()
   // TODO Implement AND
 }
 
+void W65C02S::ASL()
+{
+  // TODO implement ASL
+}
+
+void W65C02S::BCC()
+{
+  // TODO implement BCC
+}
+
+void W65C02S::BCS()
+{
+  // TODO implement BCS
+}
+
+void W65C02S::BEQ()
+{
+  // TODO implement BEQ
+}
+
+void W65C02S::BIT()
+{
+  // TODO implement BIT
+}
+
+void W65C02S::BMI()
+{
+  // TODO implement BMI
+}
+
+void W65C02S::BNE()
+{
+  // TODO implement BNE
+}
+
+void W65C02S::BPL()
+{
+  // TODO implement BPL
+}
+
 void W65C02S::BRK()
 {
   switch (IR) {
@@ -248,7 +288,17 @@ void W65C02S::BRK()
   }
 }
 
-void W65C02S::CLX()
+void W65C02S::BVC()
+{
+  // TODO implement BVC
+}
+
+void W65C02S::BVS()
+{
+  // TODO implement BVS
+}
+
+void W65C02S::CLC()
 {
   switch (IR) {
   case (0x18 << 4) | 0:
@@ -422,64 +472,25 @@ void W65C02S::tick()
 
   set_read();
 
-  switch (IR >> 4) {
-  case 0x61:
-  case 0x65:
-  case 0x69:
-  case 0x6D:
-  case 0x71:
-  case 0x75:
-  case 0x79:
-  case 0x7D:
+  uint8_t OP = IR >> 4;
+
+  if (OP == 0x61 || OP == 0x65 || OP == 0x69 || OP == 0x6D || OP == 0x71 || OP == 0x75 || OP == 0x79 || OP == 0x7D)
     ADC();
-    break;
-
-  case 0x25:
-  case 0x29:
-  case 0x35:
-  case 0x2D:
-  case 0x3D:
-  case 0x39:
-  case 0x21:
-  case 0x31:
+  else if (OP == 0x25 || OP == 0x29 || OP == 0x35 || OP == 0x2D || OP == 0x3D || OP == 0x39 || OP == 0x21 || OP == 0x31)
     AND();
-    break;
-
-  case 0x00:
+  else if (OP == 0x00)
     BRK();
-    break;
-
-  case 0x18:
-  case 0x58:
-    CLX();
-    break;
-
-  case 0xA1:
-  case 0xA5:
-  case 0xA9:
-  case 0xAD:
-  case 0xB1:
-  case 0xB5:
-  case 0xB9:
-  case 0xBD:
+  else if (OP == 0x18)
+    CLC();
+  else if (OP == 0xA1 || OP == 0xA5 || OP == 0xA9 || OP == 0xAD || OP == 0xB1 || OP == 0xB5 || OP == 0xB9 || OP == 0xBD)
     LDA();
-    break;
-
-  case 0xA4:
-  case 0xA0:
-  case 0xAC:
-  case 0xB4:
-  case 0xBC:
+  else if (OP == 0xA4 || OP == 0xA0 || OP == 0xAC || OP == 0xB4 || OP == 0xBC)
     LDX();
-    break;
-
-  /* Undefined behaviour -> throw exception */
-  default:
+  else {
     std::stringstream stream;
     stream << "Attempted to execute opcode 0x" << std::setw(2) << std::setfill('0') << std::hex << (int)(IR >> 4)
            << " at location " << int_to_hex(get_addr());
     throw std::invalid_argument(stream.str());
-    break;
   }
   IR++;
   ticks++; // increment ticks
